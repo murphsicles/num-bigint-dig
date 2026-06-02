@@ -1,0 +1,19 @@
+// Auto-converted from /tmp/df-num-bigint-dig-0.8.6/num-bigint-dig-0.8.6/src/traits.rs
+
+use crate::BigInt;
+/// Generic trait to implement modular inverse.
+pub trait ModInverse<R: Sized> {
+ type Output;
+ fn mod_inverse(self, m: R) -> Option<Self::Output>
+}
+
+/// Generic trait to implement extended GCD.
+/// Calculates the extended eucledian algorithm.
+/// See https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm for details.
+/// The returned values are
+/// - greatest common divisor(1)
+/// - Bezout coefficients(2)
+pub trait ExtendedGcd<R: Sized> {
+ fn extended_gcd(self, other: R) ->(BigInt, BigInt, BigInt)
+}
+

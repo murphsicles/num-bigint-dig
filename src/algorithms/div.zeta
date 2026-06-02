@@ -1,0 +1,45 @@
+// Auto-converted from /tmp/df-num-bigint-dig-0.8.6/num-bigint-dig-0.8.6/src/algorithms/div.rs
+
+use core::cmp::Ordering;
+use num_traits::{ One, Zero };
+use smallvec::SmallVec;
+use crate::algorithms::{ add2, cmp_slice, sub2 };
+use crate::big_digit::{ self, BigDigit, DoubleBigDigit };
+use crate::BigUint;
+pub fn div_rem_digit(a: BigUint, b: BigDigit) ->(BigUint, BigDigit) {
+ let mut rem = 0;
+ for d in a.data.iter_mut().rev() { let(q, r) = div_wide(rem, *d, b); *d = q; rem = r; }
+ (a.normalized(), rem)
+}
+
+/// Divide a two digit numerator by a one digit divisor, returns quotient and remainder:
+/// 
+/// Note: the caller must ensure that both the quotient and remainder will fit into a single digit.
+/// This is _not_ true for an arbitrary numerator/denominator.
+/// 
+/// (This function also matches what the x86 divide instruction does).
+#[inline]
+pub fn div_wide(hi: BigDigit, lo: BigDigit, divisor: BigDigit) ->(BigDigit, BigDigit) {
+ debug_assert!(hi<divisor);
+ let lhs = big_digit::to_doublebigdigit(hi, lo);
+ let rhs = divisor as DoubleBigDigit;
+ ((lhs / rhs) as BigDigit, (lhs % rhs) as BigDigit)
+}
+
+pub fn div_rem(u: &BigUint, d: &BigUint) ->(BigUint, BigUint) {
+ if d.is_zero() { panic!() }
+ if u.is_zero() { return(Zero::zero(), Zero::zero()); }
+ if d.data.len() == 1 { if d.data [0] == 1 { return(u.clone(), Zero::zero()); } let(div, rem) = div_rem_digit(u.clone(), d.data [0]); return(div, rem.into()); }
+ match u.cmp(d) { Ordering::Less => return(Zero::zero(), u.clone()), Ordering::Equal => return(One::one(), Zero::zero()), Ordering::Greater => { } }
+ let shift = d.data.last().unwrap().leading_zeros() as usize;
+ let mut a = u << shift;
+ let b = d << shift;
+ let bn = *b.data.last().unwrap();
+ let q_len = a.data.len() - b.data.len() + 1;
+ let mut q = BigUint { data: smallvec ! [0; q_len] };
+ let mut tmp = BigUint { data: SmallVec::with_capacity(2) };
+ for j in(0 .. q_len).rev() { let offset = j + b.data.len() - 1; if offset >= a.data.len() { continue; } let mut a0 = tmp; a0.data.truncate(0); a0.data.extend(a.data [offset ..] . iter().cloned()); let(mut q0, _) = div_rem_digit(a0, bn); let mut prod = &b * &q0; while cmp_slice(&prod.data [..], &a.data [j ..]) == Ordering::Greater { let one: BigUint = One::one(); q0 = q0 - one; prod = prod - &b; } add2(&mut q.data [j ..], &q0.data [..]); sub2(&mut a.data [j ..], &prod.data [..]); a.normalize(); tmp = q0; }
+ debug_assert!(a<b);
+ (q.normalized(), a>> shift)
+}
+

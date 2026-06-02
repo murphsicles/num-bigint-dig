@@ -1,0 +1,129 @@
+// Auto-converted from /tmp/df-num-bigint-dig-0.8.6/num-bigint-dig-0.8.6/src/lib.rs
+
+// [unsupported item]
+// [unsupported item]
+// [unsupported item]
+// [unsupported item]
+// [unsupported item]
+use core::fmt;
+#[cfg(feature = "std")] use std::error::Error;
+#[macro_use]
+mod macros;
+mod bigint;
+mod biguint;
+#[cfg(feature = "prime")]
+pub mod prime;
+pub mod algorithms;
+pub mod traits;
+pub use crate::traits::*;
+#[cfg(feature = "rand")]
+mod bigrand;
+type UsizePromotion = u32;
+
+type UsizePromotion = u64;
+
+type IsizePromotion = i32;
+
+type IsizePromotion = i64;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseBigIntError {
+ kind: BigIntErrorKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum BigIntErrorKind {
+ Empty,
+ InvalidDigit,
+}
+
+impl ParseBigIntError {
+ fn __description(&self) -> &str {
+ use crate::BigIntErrorKind::*;
+ match self.kind { Empty => "cannot parse integer from empty string", InvalidDigit => "invalid digit found in string" }
+ }
+ 
+ fn empty() -> Self {
+ ParseBigIntError { kind: BigIntErrorKind::Empty }
+ }
+ 
+ fn invalid() -> Self {
+ ParseBigIntError { kind: BigIntErrorKind::InvalidDigit }
+ }
+ 
+}
+
+impl fmt::Display for ParseBigIntError {
+ fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+ self.__description().fmt(f)
+ }
+ 
+}
+
+#[cfg(feature = "std")]
+impl Error for ParseBigIntError {
+ fn description(&self) -> &str {
+ self.__description()
+ }
+ 
+}
+
+pub use crate::biguint::BigUint;
+pub use crate::biguint::IntoBigUint;
+pub use crate::biguint::ToBigUint;
+pub use crate::bigint::negate_sign;
+pub use crate::bigint::BigInt;
+pub use crate::bigint::IntoBigInt;
+pub use crate::bigint::Sign;
+pub use crate::bigint::ToBigInt;
+#[cfg(feature = "rand")] pub use crate::bigrand::{ RandBigInt, RandomBits, UniformBigInt, UniformBigUint };
+#[cfg(feature = "prime")] pub use bigrand::RandPrime;
+pub const VEC_SIZE: usize = 8;
+
+pub const VEC_SIZE: usize = 4;
+
+mod big_digit {
+ pub type BigDigit = u32;
+ 
+ pub type BigDigit = u64;
+ 
+ pub type DoubleBigDigit = u64;
+ 
+ pub type DoubleBigDigit = u128;
+ 
+ pub type SignedDoubleBigDigit = i64;
+ 
+ pub type SignedDoubleBigDigit = i128;
+ 
+ pub const BITS: usize = 32;
+ 
+ pub const BITS: usize = 64;
+ 
+ const LO_MASK: DoubleBigDigit = (- 1i32 as DoubleBigDigit)>> BITS;
+ 
+ const LO_MASK: DoubleBigDigit = (- 1i64 as DoubleBigDigit)>> BITS;
+ 
+ #[inline]
+ fn get_hi(n: DoubleBigDigit) -> BigDigit {
+ (n>> BITS) as BigDigit
+ }
+ 
+ #[inline]
+ fn get_lo(n: DoubleBigDigit) -> BigDigit {
+ (n &LO_MASK) as BigDigit
+ }
+ 
+ /// Split one `DoubleBigDigit` into two `BigDigit`s.
+ #[inline]
+ pub fn from_doublebigdigit(n: DoubleBigDigit) ->(BigDigit, BigDigit) {
+ (get_hi(n), get_lo(n))
+ }
+ 
+ /// Join two `BigDigit`s into one `DoubleBigDigit`
+ #[inline]
+ pub fn to_doublebigdigit(hi: BigDigit, lo: BigDigit) -> DoubleBigDigit {
+ (DoubleBigDigit::from(lo)) | ((DoubleBigDigit::from(hi)) << BITS)
+ }
+ 
+}
+
