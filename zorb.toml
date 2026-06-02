@@ -1,0 +1,9 @@
+[package]
+name = "@math/num-bigint-dig"
+version = "0.1.0"
+edition = "2026"
+description = "Arbitrary-precision big integer arithmetic for Zeta — BigInt, BigUint, modular arithmetic, prime generation, Paillier support"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/murphsicles/num-bigint-dig"
+keywords = ["bigint", "biguint", "arithmetic", "prime", "paillier"]
+categories = ["mathematics"]
